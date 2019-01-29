@@ -26,7 +26,7 @@
 
 (fn xml-identifier-char? (x)
   (not (| (xml-special-char? x)
-		  (xml-whitespace? x))))
+          (xml-whitespace? x))))
 
 (fn xml-string-trailing-whitespaces (s)
   (do ((i (-- (length s)) (-- i))
@@ -42,7 +42,7 @@
 (fn xml-read-char (in)
   (xml-peek-char in)
   (aprog1 (read-char in)
-	(push ! *xml2lml-read*)))
+    (push ! *xml2lml-read*)))
 
 (fn xml-optional-char (in ch)
   (& (== (xml-peek-char in) ch)
@@ -68,8 +68,8 @@
     (with (c (xml-read-char in))
       (enqueue q 
         (? (xml-whitespace? c) ; Compress whitespace sequence.
-	       (xml-compress-whitespace in)
-	       c)))))
+           (xml-compress-whitespace in)
+           c)))))
 
 (fn xml2lml-identifier (in)
   (xml-skip-spaces in)
@@ -110,32 +110,32 @@
 (fn xml2lml-text (in)
   (xml-skip-spaces in)
   (let txt (xml-read-while in #'xml-text-char?)
-;	(? (== #\& (xml-peek-char in))
-;	   (+ txt
-;		   (xml2lml-entity in)
-;		   (xml2lml-text in))
-	    txt));)
+;   (? (== #\& (xml-peek-char in))
+;      (+ txt
+;          (xml2lml-entity in)
+;          (xml2lml-text in))
+        txt));)
 
 (fn xml2lml-name (in &optional (pkg nil))
   (let ident (xml2lml-unify-identifier in)
     (when (== (xml-peek-char in) #\:)
-	  (xml-read-char in)
-	  (return (values ident (xml2lml-unify-identifier in))))
+      (xml-read-char in)
+      (return (values ident (xml2lml-unify-identifier in))))
     (values nil (make-symbol ident pkg))))
 
 (fn xml2lml-quoted-string-r (in quote-char)
   (let c (xml-read-char in)
     (unless (== quote-char c)
       (. (? (== c #\\)
-			(xml-read-char in)
-        	c)
-		 (xml2lml-quoted-string-r in quote-char)))))
+            (xml-read-char in)
+            c)
+         (xml2lml-quoted-string-r in quote-char)))))
 
 (fn xml2lml-string-symbol (s)
   (unless (string== "" s)
     (? (every [& (alpha-char? _)
-			     (lower-case? _)]
-		      (string-list s))
+                 (lower-case? _)]
+              (string-list s))
        (make-symbol (upcase s))
        s)))
 
@@ -145,7 +145,7 @@
     (| (| (== c #\")
           (== c #\'))
        (xml-error "Quote expected."))
-	(list-string (xml2lml-quoted-string-r in c))))
+    (list-string (xml2lml-quoted-string-r in c))))
 
 (fn xml2lml-attributes (in)
   (xml-skip-spaces in)
@@ -164,36 +164,36 @@
        (xml-error "Slash ('/') at start and end of tag.")) ; XXX xml-collect-error
     (| (== (xml-read-char in) #\>)
        (xml-error "End of tag expected instead of char '~A'." (stream-last-char in)))
-	;(xml-issue-collected-errors)
+    ;(xml-issue-collected-errors)
     (values ns name
             (?
-              closing	'closing
-              inline	'inline
+              closing   'closing
+              inline    'inline
               'opening)
-			attrs)))
+            attrs)))
 
 (fn xml2lml-version-tag (in)
   (xml-expect-char in #\?)
   (while (not (& (== #\? (xml-read-char in))
-			     (== #\> (xml-read-char in))))
-	     (xml2lml-toplevel in)))
+                 (== #\> (xml-read-char in))))
+         (xml2lml-toplevel in)))
 
 (fn xml-skip-decl (in)
   (while (not (== #\> (xml-read-char in)))
-		 (xml2lml-toplevel in)))
+         (xml2lml-toplevel in)))
 
 (fn xml-skip-comment (in)
   (while (not (& (== #\- (xml-read-char in))
-			     (== #\- (xml-read-char in))
-			     (== #\> (xml-read-char in))))
-		 (xml2lml-toplevel in)))
+                 (== #\- (xml-read-char in))
+                 (== #\> (xml-read-char in))))
+         (xml2lml-toplevel in)))
 
 (fn xml2lml-comment-or-decl (in)
   (xml-expect-char in #\!)
   (? (& (== #\- (read-char in))
-  	    (== #\- (read-char in)))
-	 (xml-skip-comment in)
-	 (xml-skip-decl in)))
+        (== #\- (read-char in)))
+     (xml-skip-comment in)
+     (xml-skip-decl in)))
 
 (fn xml2lml-tag (in)
   (xml-skip-spaces in)
@@ -206,12 +206,12 @@
      (with ((ns name type attrs) (xml2lml-tag in))
        (case type
          'inline
-  	          `((,name ,@attrs) ,@(xml2lml-list in this-ns this-name))
+              `((,name ,@attrs) ,@(xml2lml-list in this-ns this-name))
          'closing
               (| (& (equal ns this-ns)
-			        (equal name this-name))
+                    (equal name this-name))
                  (xml-error "Closing tag for ~A:~A where ~A:~A was expected."
-		                    ns name this-ns this-name))
+                            ns name this-ns this-name))
          `(,(xml2lml-block in ns name attrs) ,@(xml2lml-list in this-ns this-name))))
   `(,(xml2lml-text in) ,@(xml2lml-list in this-ns this-name))))
 
@@ -221,17 +221,17 @@
 (fn xml2lml-cont-std (in)
   (xml-skip-spaces in)
   (with ((ns name type attrs) (xml2lml-standard-tag in))
-	(| (eq type 'opening)
-	   (xml-error "Opening tag expected instead of ~A." type))
-	(xml2lml-block in ns name attrs)))
+    (| (eq type 'opening)
+       (xml-error "Opening tag expected instead of ~A." type))
+    (xml2lml-block in ns name attrs)))
 
 (fn xml2lml-toplevel (in)
   (xml-skip-spaces in)
   (| (== #\< (xml-read-char in))
-	 (error "Expected tag instead of text."))
+     (error "Expected tag instead of text."))
   (case (xml-peek-char in) :test #'==
-	#\?  (xml2lml-version-tag in)
-	#\!  (xml2lml-comment-or-decl in)
+    #\?  (xml2lml-version-tag in)
+    #\!  (xml2lml-comment-or-decl in)
     (xml2lml-cont-std in)))
 
 (fn xml2lml (in)

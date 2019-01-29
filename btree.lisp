@@ -3,7 +3,7 @@
      value v
      parent p)
   (clr left
-	   right)
+       right)
   this)
 
 (defmember bnode
@@ -15,13 +15,13 @@
 
 (defmethod bnode _add-left (k v)
   (!? left
-	  (!.add k v)
-	  (= left (new bnode k v this))))
+      (!.add k v)
+      (= left (new bnode k v this))))
 
 (defmethod bnode _add-right (k v)
   (!? right
-	  (!.add k v)
-	  (= right (new bnode k v this))))
+      (!.add k v)
+      (= right (new bnode k v this))))
 
 (defmethod bnode add (k v)
   (? (< k key)
@@ -39,14 +39,14 @@
 (defmethod bnode lookup (k)
   (? (== key k)
      this
-	 (? (< k key )
+     (? (< k key )
         (_lookup-left k)
         (_lookup-right k))))
 
 (defmethod bnode get-first ()
   (!? left
-	  (!.get-first)
-	  this))
+      (!.get-first)
+      this))
 
 (defmethod bnode _next-parent (k)
   (!? parent
@@ -59,14 +59,14 @@
 (defmethod bnode _next-trav-left (k)
   (!? left
       (!._next-trav k)
-	  (? (> key k)
+      (? (> key k)
          this
          (_next-parent k))))
 
 (defmethod bnode _next-trav-right (k)
   (!? right
       (!._next-trav k)
-	  (_next-parent k)))
+      (_next-parent k)))
 
 (defmethod bnode _next-trav (k)
   (? (<= key k)
